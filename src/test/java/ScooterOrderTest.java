@@ -4,12 +4,12 @@ import org.junit.Test;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.WebDriver;
-import java.time.Duration;
 import org.openqa.selenium.By;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.junit.Assert;
 import pageobject.PageOrderLocators;
+
 
 public class ScooterOrderTest {
 
@@ -30,24 +30,27 @@ public class ScooterOrderTest {
     }
 
     @Test
-    public void testOrderScooterDataSet1() {
-        orderScooter("Иван", "Иванов", "ул. Пушкина, д. 10", 3, "+79001234567",
-                "01.10.2024", "сутки", "black", "Тут что-то не так");
+    public void checkScooterOrderForm() {
+        orderScooter(PageOrderLocators.orderButtonTop, "Иван", "Иванов", "ул. Пушкина, д. 10",
+                3, "+79001234567", "01.10.2024", "сутки", "black", "Тут что-то не так");
+        orderScooter(PageOrderLocators.orderButtonBottom, "Иван", "Иванов", "ул. Пушкина, д. 10",
+                3, "+79001234567", "01.10.2024", "сутки", "black", "Тут что-то не так");
     }
 
     @Test
-    public void testOrderScooterDataSet2() {
-        orderScooter("Анна", "Смирнова", "пр. Ленина, д. 5",  2,"89112345678",
-                "30.09.2024", "трое суток", "grey", "Тут всё ок");
+    public void CheckScooterOrderFormOtherDataSet() {
+        orderScooter(PageOrderLocators.orderButtonTop, "Анна", "Смирнова", "пр. Ленина, д. 5",
+                2,"89112345678", "30.09.2024", "трое суток", "grey", "Тут всё ок");
+        orderScooter(PageOrderLocators.orderButtonBottom, "Анна", "Смирнова", "пр. Ленина, д. 5",
+                2,"89112345678", "30.09.2024", "трое суток", "grey", "Тут всё ок");
     }
-
-    private void orderScooter(String name, String surname, String address, int metro,
+    private void orderScooter(By orderButtonLocator, String name, String surname, String address, int metro,
                               String phone, String deliveryDate, String rental,
                               String color, String comment) {
 
-        //Нажимаем кнопку «Заказать» (сверху)
-        WebElement orderButtonTop = driver.findElement(PageOrderLocators.orderButtonTop);
-        orderButtonTop.click();
+        //Нажимаем кнопку «Заказать»
+        WebElement orderButton = driver.findElement(orderButtonLocator);
+        orderButton.click();
 
         //Заполняем форму заказа
         driver.findElement(PageOrderLocators.nameInput).sendKeys(name);
@@ -63,11 +66,9 @@ public class ScooterOrderTest {
         WebElement metroStationOption = driver.findElement(By.xpath("//button[@value = " + metro + "]"));
         metroStationOption.click();
 
-
         //Нажимаем кнопку "Далее"
         WebElement nextButton = driver.findElement(PageOrderLocators.nextButton);
         nextButton.click();
-
 
         //Заполняем вторую форму заказа
         driver.findElement(PageOrderLocators.datePicker).sendKeys(deliveryDate);
@@ -95,13 +96,9 @@ public class ScooterOrderTest {
         WebElement orderButtonClick = driver.findElement(PageOrderLocators.orderButton);
         orderButtonClick.click();
 
-        // Ожидание, пока не появится окно с текстом "Хотите оформить заказ?"
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(3));
-        try {
-            WebElement orderDialog = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[text() = 'Хотите оформить заказ?']")));
-        } finally {
-
-        }
+        // Ожидание диалогового окна подтверждения
+        PageOrderLocators pageOrderLocators = new PageOrderLocators(driver);
+        WebElement orderDialog = pageOrderLocators.waitForOrderDialog();
 
         //Нажимаем кнопку «Подтвердить заказ»
         WebElement confirmOrderButtonYes = driver.findElement(PageOrderLocators.confirmOrderButton);
